@@ -157,7 +157,7 @@
           <ul>
             <li v-for="item in firstBoysRanking" :key="item.title" class="boys_item_first">
               <img :src="item.coverImage" alt="封面" class="boys_cover_first">
-              <div class="boys_info">
+              <div class="boys_info_first">
                 <p class="boys_title_first" @click="goToComicDetail(item)">{{ item.comicTitle }}</p>
                 <p class="boys_author_first">作者: {{ item.authorName }}</p>
                 <p class="boys_update_first">更新至: {{ item.leastChapter }}</p>
@@ -171,8 +171,8 @@
 
           <div class="main_BoysComic_content_other_top">
             <li v-for="item in otherBoysRanking_top" :key="item.title" class="boys_item_other_top">
-              <img :src="item.coverImage" alt="封面" class="boys_cover_other">
-              <div class="boys_info">
+              <div class="boys_info_other">
+                <img :src="item.coverImage" alt="封面" class="boys_cover_other">
                 <p class="boys_title_other" @click="goToComicDetail(item)">{{ item.comicTitle }}</p>
                 <p class="boys_author_other">作者: {{ item.authorName }}</p>
                 <p class="boys_update_other">更新至: {{ item.leastChapter }}</p>
@@ -181,8 +181,8 @@
           </div>
           <div class="main_BoysComic_content_other_lower">
             <li v-for="item in otherBoysRanking_lower" :key="item.title" class="boys_item_other_top">
-              <img :src="item.coverImage" alt="封面" class="boys_cover_other">
-              <div class="boys_info">
+              <div class="boys_info_other">
+                <img :src="item.coverImage" alt="封面" class="boys_cover_other">
                 <p class="boys_title_other" @click="goToComicDetail(item)">{{ item.comicTitle }}</p>
                 <p class="boys_author_other">作者: {{ item.authorName }}</p>
                 <p class="boys_update_other">更新至: {{ item.leastChapter }}</p>
@@ -209,7 +209,7 @@
           <ul>
             <li v-for="item in firstGirlsRanking" :key="item.title" class="girls_item_first">
               <img :src="item.coverImage" alt="封面" class="girls_cover_first">
-              <div class="girls_info">
+              <div class="girls_info_first">
                 <p class="girls_title_first" @click="goToComicDetail(item)">{{ item.comicTitle }}</p>
                 <p class="girls_author_first">作者: {{ item.author }}</p>
                 <p class="girls_update_first">更新至: {{ item.leastChapter }}</p>
@@ -219,12 +219,13 @@
 
 
         </div>
+
         <div class="main_GirlsComic_content_other">
 
           <div class="main_GirlsComic_content_other_top">
             <li v-for="item in otherGirlsRanking_top" :key="item.title" class="girls_item_other_top">
-              <img :src="item.coverImage" alt="封面" class="girls_cover_other">
-              <div class="girls_info">
+              <div class="girls_info_other">
+                <img :src="item.coverImage" alt="封面" class="girls_cover_other">
                 <p class="girls_title_other" @click="goToComicDetail(item)">{{ item.comicTitle }}</p>
                 <p class="girls_author_other">作者: {{ item.author }}</p>
                 <p class="girls_update_other">更新至: {{ item.leastChapter }}</p>
@@ -233,8 +234,8 @@
           </div>
           <div class="main_GirlsComic_content_other_lower">
             <li v-for="item in otherGirlsRanking_lower" :key="item.title" class="girls_item_other_top">
-              <img :src="item.coverImage" alt="封面" class="girls_cover_other">
-              <div class="girls_info">
+              <div class="girls_info_other">
+                <img :src="item.coverImage" alt="封面" class="girls_cover_other">
                 <p class="girls_title_other" @click="goToComicDetail(item)">{{ item.comicTitle }}</p>
                 <p class="girls_author_other">作者: {{ item.author }}</p>
                 <p class="girls_update_other">更新至: {{ item.leastChapter }}</p>
@@ -242,6 +243,7 @@
             </li>
           </div>
         </div>
+
       </div>
 
     </div>
@@ -283,7 +285,6 @@ const getComicToShow = async () =>{
   girlsRanking.value=response.data.girlsRankingComic;
   carouselComics.value=response.data.carouselComics;
 }
-const SECRET_KEY = "kiteseven77"
 const goToComicDetail = (comic) => {
   console.info(comic)
   console.info(comic.slug)
@@ -698,6 +699,10 @@ a{cursor: pointer; /* 鼠标悬停时显示为手型 */}
   font-size: 33px;
   color: #888;
 }
+.boys_info_other{
+  width: 200px;
+  height: 300px;
+}
 .boys_cover_other{
   width: 200px;
   height: 250px;
@@ -784,6 +789,10 @@ a{cursor: pointer; /* 鼠标悬停时显示为手型 */}
   font-size: 33px;
   color: #888;
 }
+.girls_info_other{
+  width: 200px;
+  height: 300px;
+}
 .girls_cover_other{
   width: 200px;
   height: 250px;
@@ -838,6 +847,9 @@ a{cursor: pointer; /* 鼠标悬停时显示为手型 */}
   overflow: hidden; /* 隐藏超出部分 */
   text-overflow: ellipsis; /* 超出部分显示省略号 */
   line-clamp: 2; /* 标准属性 */
+  word-break: break-all; /* 新增：允许在任何字符间断行 */
+  line-height: 1.2em;    /* 新增：确保行高合适 */
+  max-height: 2.4em;     /* 新增：基于行高的两倍高度限制 */
 }
 
 .recommend_author,

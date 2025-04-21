@@ -26,6 +26,10 @@
           <div class="menu-item" @click="setDisplayMode('double')">
             <span :class="{ active: displayMode === 'double' }">跨页模式</span>
           </div>
+          <div class="menu-item" @click="setJapaneseReadingOrder">
+            <span >日式阅读</span>
+            <span >{{JapaneseReadingOrder ? 'on':'off'}}</span>
+          </div>
           <div class="menu-item" @click="toggleDarkMode">
             <span>夜间模式</span>
             <span class="toggle-indicator">{{ isDarkMode ? '☀️' : '🌙' }}</span>
@@ -37,7 +41,7 @@
       <h1>{{ comicTitle }}/{{ chapterName }}</h1>
     </div>
 
-    <div v-if=" displayMode === 'original' " class="comic-page-original" v-for="(page, index) in pages" :key="index">
+    <div v-show=" displayMode === 'original' " class="comic-page-original" v-for="(page, index) in pages" :key="index">
       <img
           v-lazyload="page.imageUrl"
           :data-src="page.imageUrl"
@@ -48,7 +52,7 @@
       />
     </div>
 
-    <div v-if="displayMode === 'double'" class="comic-page-double" @click="handlePageClick">
+    <div v-show="displayMode === 'double'" class="comic-page-double" @click="handlePageClick">
       <div v-for="(group, index) in doublePageGroups" :key="index" class="page-group" v-show="index === currentPageIndex">
         <div class="page-container" v-for="page in group" :key="page.imageUrl">
           <img
@@ -63,7 +67,7 @@
       </div>
     </div>
 
-    <div v-if="displayMode === 'single'" class="comic-page-single" @click="handlePageClick">
+    <div v-show="displayMode === 'single'" class="comic-page-single" @click="handlePageClick">
       <div v-for="(page, index) in pages" :key="index" v-show ="index===currentPageIndex">
         <img
             v-lazyload="page.imageUrl"
@@ -85,20 +89,29 @@
   </div>
 
 
+
+
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, computed, onUnmounted} from 'vue';
+import {ref, onMounted, computed, onUnmounted, nextTick} from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router';
 import { watch } from 'vue';
 import{
   getComicChapterPages,
+  getUserReaderConfig,
 } from '@/api/comicAPi'
 import {
   encipher,
   decrypt
 } from '@/util/encryptedUtils'
-import refresh from "@/components/refresh.vue";
+import {
+  getConfig, setConfig
+} from '@/util/config'
+import {c} from "vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P";
+
+
 const route = useRoute();
 const router = useRouter();
 const props = defineProps({
@@ -120,6 +133,7 @@ const totalChapterCount=ref()
 type DisplayMode = 'single' | 'double' | 'original';
 const displayMode = ref<DisplayMode>('original');
 const currentPageIndex = ref(0); // 当前页码
+const JapaneseReadingOrder = ref(false);
 
 // 新增响应式状态
 const showSettings = ref(false)
@@ -131,7 +145,11 @@ const isDarkMode = ref(false)
 const toggleSettings = () => {
   showSettings.value = !showSettings.value
 }
-
+const setJapaneseReadingOrder =() =>{
+  JapaneseReadingOrder.value = !JapaneseReadingOrder.value
+  setDisplayMode('double')
+  processDoublePages();
+}
 // 点击外部关闭菜单
 const handleClickOutside = (event: MouseEvent) => {
   const settingsEl = document.querySelector('.settings-container')
@@ -148,9 +166,6 @@ const toggleDarkMode = () => {
 const setDisplayMode = (mode: DisplayMode) => {
   displayMode.value = mode;
   // 切换模式后滚动回顶部
-  if(mode==='double'){
-    processDoublePages()
-  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
@@ -160,16 +175,55 @@ const currentGroupIndex = computed(() => Math.floor(currentPageIndex.value / 2))
 // 点击事件处理
 // 分页方法
 const nextPage = () => {
-  if (currentPageIndex.value < doublePageGroups.value.length - 1) {
+  let maxPageIndex = 0
+  if(displayMode.value==='double')
+  {
+    maxPageIndex = doublePageGroups.value.length - 1
+  }else if(displayMode.value === 'single'){
+    maxPageIndex = pages.value.length-1
+  }
+
+  if (currentPageIndex.value < maxPageIndex) {
     currentPageIndex.value++
+  }else {
+    console.info("已经到底了")
+    if (chapterNumber.value < totalChapterCount.value){
+      ElMessageBox.confirm(
+          '是否前往下一话？',
+          '',
+          {
+            confirmButtonText: '是',
+            cancelButtonText: '否',
+          }
+      ).then(() =>{
+        goToNextChapter()
+      })
+    }
   }
 }
 
 const prevPage = () => {
   if (currentPageIndex.value > 0) {
     currentPageIndex.value--
+  }else if(currentGroupIndex.value === 0){
+    console.info("已经到顶了")
+    if(chapterNumber.value > 1){
+      ElMessageBox.confirm(
+          '是否前往上一话？',
+          '',
+          {
+            confirmButtonText: '是',
+            cancelButtonText: '否',
+          }
+      ).then(() =>{
+        goToPreviousChapter()
+      })
+    }
   }
 }
+
+
+
 const handlePageClick = (event: MouseEvent) => {
   const container = event.currentTarget as HTMLElement
   const clickX = event.clientX
@@ -198,27 +252,58 @@ const processDoublePages = () => {
   let currentGroup: ComicPage[] = []
 
   // 遍历所有页面
-  for (const [index, page] of pages.value.entries()) {
-    currentGroup.push(page)
+  if (JapaneseReadingOrder.value === false){
+    for (const [index, page] of pages.value.entries()) {
+      currentGroup.push(page)
 
-    // 每两个页面形成一组，或在最后一页时结束
-    if (currentGroup.length === 2 || index === pages.value.length - 1) {
-      groups.push([...currentGroup])
-      currentGroup = []
+      // 每两个页面形成一组，或在最后一页时结束
+      if (currentGroup.length === 2 || index === pages.value.length - 1) {
+        groups.push([...currentGroup])
+        currentGroup = []
+      }
+    }
+
+    // 处理奇数页最后一组的情况
+    if (pages.value.length % 2 !== 0) {
+      const lastGroup = groups[groups.length - 1]
+      // 如果需要保持双页对称，可以添加空白页
+      // lastGroup.push({ imageUrl: 'placeholder.jpg' })
+    }
+  }else if(JapaneseReadingOrder.value === true){
+    // 遍历所有页面（从右到左）
+    for (let i = pages.value.length - 1; i >= 0; i--) {
+      currentGroup.unshift(pages.value[i]) // 从右侧开始添加
+
+      // 每两个页面形成一组，或在最后一页时结束
+      if (currentGroup.length === 2 || i === 0) {
+        // 日式漫画需要交换组内顺序
+        if (currentGroup.length === 2) {
+          // 交换组内图片顺序 [右页, 左页] => [左页, 右页]
+          ;[currentGroup[0], currentGroup[1]] = [currentGroup[1], currentGroup[0]]
+        }
+        groups.unshift(currentGroup) // 保持整体顺序从右到左
+        currentGroup = []
+      }
+    }
+
+    // 处理奇数页情况
+    if (pages.value.length % 2 !== 0) {
+      // 在最后一组前面添加空白页
+      const lastGroup = groups[0]
+      groups[0] = [blankPage, ...lastGroup]
     }
   }
 
-  // 处理奇数页最后一组的情况
-  if (pages.value.length % 2 !== 0) {
-    const lastGroup = groups[groups.length - 1]
-    // 如果需要保持双页对称，可以添加空白页
-    // lastGroup.push({ imageUrl: 'placeholder.jpg' })
-  }
-
   doublePageGroups.value = groups
+  console.info("跨页数据",doublePageGroups.value);
+  nextTick(() => {
+    doublePageGroups.value = groups;
+    console.info('处理后的跨页数据:', doublePageGroups.value);
+  });
 
-  console.info(doublePageGroups.value);
 }
+
+
 
 // 添加空白页处理
 const blankPage: ComicPage = {
@@ -284,13 +369,23 @@ const loadChapterData = async () => {
   totalChapterCount.value=pagesResponse.data.totalChapterCount;
   console.info(pages.value)
   console.info(comicTitle.value)
+  processDoublePages()
+  await loadReadingSettings();
+}
+
+const loadReadingSettings = async () => {
+  const config = await getUserReaderConfig();
+  console.info(config);
+  displayMode.value =config.data.displayMode;
+  JapaneseReadingOrder.value=config.data.JapaneseReadingOrder
+  isDarkMode.value=config.data.isDarkMode
+  console.info("displayMode:",displayMode)
 }
 
 onMounted(
     () =>
     {
       loadChapterData()
-
     }
 
 )

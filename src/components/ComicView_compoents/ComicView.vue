@@ -13,8 +13,8 @@
             <p>简介: {{ comic.description }}</p>
             <div class="buttons">
               <el-button type="primary" @click="goToReader">开始阅读</el-button>
-              <el-button type="default">取消收藏</el-button>
-              <el-button type="success">分享</el-button>
+              <el-button type="danger">取消收藏</el-button>
+              <el-button type="success" @click="shareTo">分享</el-button>
             </div>
           </div>
       </div>
@@ -38,6 +38,26 @@
 
 
   </div>
+
+
+  <el-dialog
+      v-model="shareDialogVisible"
+      title="分享链接"
+      width="500"
+
+  >
+    <div style="height: 200px">
+
+    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="shareDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="shareDialogVisible = false">
+          Confirm
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -53,6 +73,7 @@ import {
 } from '@/util/encryptedUtils'
 
 import CryptoJS from "crypto-js";
+import {Action, ElMessage, ElMessageBox} from "element-plus";
 
 const router = useRouter();
 const route = useRoute();
@@ -63,7 +84,8 @@ const props = defineProps({
 });
 const slug = props.slug
 
-
+const shareDialogVisible=ref(false)
+const shareLink = ref('');
 // 漫画信息
 const comic = ref({
   comicId:0,
@@ -141,6 +163,16 @@ const goToChapter = (chapterNumber: number) => {
   ).href;
   window.open(url, '_blank');
 };
+
+//分享链接功能
+const shareTo = () => {
+  let v = encipher(comic.value.comicId)
+  const comicUrl = `http://localhost:5173/comic/${slug}?v=${v}`;
+  const encodedUrl = encodeURIComponent(comicUrl);
+  shareLink.value = `http://localhost:5173/shared?redirect=${encodedUrl}`;
+  console.info(shareLink.value);
+  shareDialogVisible.value=true
+}
 </script>
 
 <style scoped>
