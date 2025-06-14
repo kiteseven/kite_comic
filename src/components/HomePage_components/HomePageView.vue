@@ -1,7 +1,7 @@
 <script setup>
 
-import MainNav from "@/components/HomePage_compoents/MainNav.vue";
-import TopTheme from "@/components/HomePage_compoents/TopTheme.vue";
+import MainNav from "@/components/HomePage_components/MainNav.vue";
+import TopTheme from "@/components/HomePage_components/TopTheme.vue";
 </script>
 
 <template>
@@ -14,7 +14,9 @@ import TopTheme from "@/components/HomePage_compoents/TopTheme.vue";
         <div class="HomePage_TopTheme"><TopTheme></TopTheme></div>
         <div class="HomePage_Wrap"><router-view></router-view></div>
       </el-main>
-      <el-footer>Footer</el-footer>
+      <el-footer>
+        © 2024 KITE_COMIC ALL KITESEVEN
+      </el-footer>
     </el-container>
   </div>
 </template>
@@ -37,7 +39,7 @@ import TopTheme from "@/components/HomePage_compoents/TopTheme.vue";
   width: 100%;
   position: fixed;
   top: 0;
-  height: 60px; /* 固定导航栏高度 */
+  height: 100px; /* 固定导航栏高度 */
   background-color: #f8f9fa;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   z-index: 1000;

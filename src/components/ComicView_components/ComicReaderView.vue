@@ -98,9 +98,10 @@ import {ref, onMounted, computed, onUnmounted, nextTick} from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router';
 import { watch } from 'vue';
-import{
+import { debounce, throttle } from 'lodash-es';
+import {
   getComicChapterPages,
-  getUserReaderConfig,
+  getUserReaderConfig, incrementComicClickCount, saveTheComicReadHistoryDetail,
 } from '@/api/comicAPi'
 import {
   encipher,
@@ -109,7 +110,7 @@ import {
 import {
   getConfig, setConfig
 } from '@/util/config'
-import {c} from "vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P";
+
 
 
 const route = useRoute();
@@ -127,7 +128,39 @@ const comicTitle = ref()
 const comicId = decrypt(route.query.v);
 const chapterNumbers = Number(route.params.chapterNumber);
 const slug = route.params.slug;
-const totalChapterCount=ref()
+const totalChapterCount=ref();
+
+// 新增状态
+const isSaving = ref(false);
+const saveStatusText = ref('');
+const saveTimer = ref(null);
+
+// 图片加载优化
+const visiblePages = ref(new Set());
+const observer = ref(null);
+
+// 设置Intersection Observer
+const setupObserver = () => {
+  observer.value = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const pageIndex = parseInt(entry.target.dataset.index);
+      if (entry.isIntersecting) {
+        visiblePages.value.add(pageIndex);
+      } else {
+        visiblePages.value.delete(pageIndex);
+      }
+    });
+  }, {
+    rootMargin: '200px 0px',
+    threshold: 0.01
+  });
+
+  // 观察所有页面元素
+  document.querySelectorAll('.comic-page').forEach(el => {
+    observer.value.observe(el);
+  });
+};
+
 
 // 新增显示模式类型
 type DisplayMode = 'single' | 'double' | 'original';
@@ -200,6 +233,7 @@ const nextPage = () => {
       })
     }
   }
+  saveReadingProgressDebounced()
 }
 
 const prevPage = () => {
@@ -220,6 +254,7 @@ const prevPage = () => {
       })
     }
   }
+  saveReadingProgressDebounced()
 }
 
 
@@ -356,6 +391,16 @@ const goToNextChapter = () => {
 
   }
 }
+
+// 在 loadChapterData 函数末尾添加
+const incrementClickCount = async (comicId) => {
+  try {
+    await incrementComicClickCount(comicId);
+  } catch (err) {
+    console.error('点击量统计失败', err);
+  }
+}
+
 const loadChapterData = async () => {
   console.info(comicId)
   console.info(chapterNumbers)
@@ -371,6 +416,7 @@ const loadChapterData = async () => {
   console.info(comicTitle.value)
   processDoublePages()
   await loadReadingSettings();
+  await incrementClickCount(comicId);
 }
 
 const loadReadingSettings = async () => {
@@ -382,13 +428,94 @@ const loadReadingSettings = async () => {
   console.info("displayMode:",displayMode)
 }
 
+// 计算当前阅读位置
+const currentReadingPosition = computed(() => {
+  let pageIndex=0;
+  if(displayMode.value=='double'){
+    pageIndex=currentPageIndex.value*2+1;
+  }else {
+    pageIndex=currentPageIndex.value+1;
+  }
+  return {
+    comicId: comicId,
+    readChapterNumber: chapterNumber.value,
+    readPageIndex: pageIndex,
+    readPercentage: Math.round((currentPageIndex.value / (pages.value.length - 1)) * 100)
+  };
+});
+
+// 带防抖的保存函数（300ms防抖）
+const saveReadingProgressDebounced = debounce(async () => {
+  try {
+    isSaving.value = true;
+    saveStatusText.value = '保存中...';
+    console.info("保存阅读记录:",currentReadingPosition.value);
+    await saveTheComicReadHistoryDetail(currentReadingPosition.value);
+
+    saveStatusText.value = '进度已保存';
+    isSaving.value = false;
+
+    // 3秒后隐藏保存提示
+    clearTimeout(saveTimer.value);
+    saveTimer.value = setTimeout(() => {
+      saveStatusText.value = '';
+    }, 3000);
+  } catch (err) {
+    console.error('保存阅读进度失败', err);
+    saveStatusText.value = '保存失败';
+    setTimeout(() => {
+      saveStatusText.value = '';
+    }, 2000);
+  }
+}, 300);
+
+// 立即保存（无防抖）
+const saveImmediately = async () => {
+  // 取消防抖保存（如果有）
+  saveReadingProgressDebounced.cancel();
+
+  try {
+    isSaving.value = true;
+    saveStatusText.value = '正在保存...';
+
+    console.info("立即保存阅读记录:", currentReadingPosition.value);
+    await saveTheComicReadHistoryDetail(currentReadingPosition.value);
+
+    saveStatusText.value = '进度已保存';
+    isSaving.value = false;
+
+    // 3秒后隐藏保存提示
+    if (saveTimer.value) clearTimeout(saveTimer.value);
+    saveTimer.value = setTimeout(() => {
+      saveStatusText.value = '';
+    }, 3000);
+  } catch (err) {
+    console.error('立即保存失败', err);
+    saveStatusText.value = '保存失败';
+    setTimeout(() => {
+      saveStatusText.value = '';
+    }, 2000);
+  }
+};
+
+//加载界面时
 onMounted(
     () =>
     {
       loadChapterData()
+      saveImmediately()
     }
-
 )
+
+//离开页面时
+onUnmounted( () => {
+  if (observer.value) {
+    observer.value.disconnect();
+  }
+  saveImmediately();
+
+});
+
 watch(
     () => route.params.chapterNumber, (oldChapterNumber,newChapterNumber) => {
       router.go(0)

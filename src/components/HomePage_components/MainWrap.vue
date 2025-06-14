@@ -95,6 +95,7 @@
     </div>
 
     <!---每日更新页面-->
+    <el-divider></el-divider>
     <div class="mainWrap_DailyUpdate">
       <div class="mainWrap_DailyUpdate_wrap">
         <div class="mainWrap_DailyUpdate_wrap_menu">
@@ -103,7 +104,9 @@
         </div>
       </div>
       <div class="mainWrap_DailyUpdate_wrap_content">
+
         <li v-for="(item, index) in dailyUpdate" :key="index" class="update_item">
+
           <div class="update_info_display">
             <div>
               <img :src="item.coverImage" alt="封面" class="update_cover">
@@ -120,6 +123,7 @@
     </div>
 
     <!---每日推荐页面-->
+    <el-divider></el-divider>
     <div class="mainWrap_Recommend">
       <div class="mainWrap_Recommend_wrap">
         <div class="mainWrap_Recommend_wrap_menu">
@@ -144,6 +148,7 @@
       </div>
     </div>
     <!---少年漫-->
+    <el-divider></el-divider>
     <div class="mainWrap_BoysComic">
       <div class="mainWrap_BoysComic_wrap">
         <div class="mainWrap_BoysComic_wrap_menu">
@@ -189,12 +194,14 @@
               </div>
             </li>
           </div>
+
         </div>
       </div>
 
 
     </div>
     <!---少女漫-->
+    <el-divider></el-divider>
     <div class="mainWrap_GirlsComic">
 
       <div class="mainWrap_GirlsComic_wrap">
@@ -249,6 +256,7 @@
     </div>
 
     <!--简单分类展示页面-->
+    <el-divider></el-divider>
     <div class="category_show_wrap">
 
     </div>
@@ -257,7 +265,6 @@
 
 <script setup>
 import {ref, onMounted,computed} from 'vue';
-import CryptoJS from 'crypto-js'
 import { useRouter } from 'vue-router';
 import{
   getShowComic,
@@ -283,7 +290,7 @@ const getComicToShow = async () =>{
   Recommend.value=response.data.recommendComic;
   boysRanking.value=response.data.boysRankingComic;
   girlsRanking.value=response.data.girlsRankingComic;
-  carouselComics.value=response.data.carouselComics;
+  //carouselComics.value=response.data.carouselComics;
 }
 const goToComicDetail = (comic) => {
   console.info(comic)

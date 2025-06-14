@@ -1,10 +1,20 @@
 
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePageView from "../components/HomePage_compoents/HomePageView.vue";
-import MainWrap from "../components/HomePage_compoents/MainWrap.vue";
-import ComicView from "../components/ComicView_compoents/ComicView.vue";
-import ComicReaderView from "../components/ComicView_compoents/ComicReaderView.vue";
+import HomePageView from "../components/HomePage_components/HomePageView.vue";
+import MainWrap from "../components/HomePage_components/MainWrap.vue";
+import ComicView from "../components/ComicView_components/ComicView.vue";
+import ComicReaderView from "../components/ComicView_components/ComicReaderView.vue";
 import ShareRedirect from "../components/ShareRedirect.vue";
+import PersonalPageView from "@/components/PersonalView_components/PersonalPageView.vue";
+import PersonalComicUploadView from "@/components/PersonalView_components/PersonalComicUploadView.vue";
+import PersonalSetting from "@/components/PersonalView_components/PersonalSetting.vue";
+import PersonalComicCreateView from "@/components/PersonalView_components/PersonalComicCreateView.vue";
+import CategoryView from "@/components/HomePage_components/CategoryView.vue";
+import PersonalComicManageView from "@/components/PersonalView_components/PersonalComicManageView.vue";
+import adminView from "@/components/AdminView_components/AdminView.vue";
+import AdminHomePreviewView from "@/components/AdminView_components/AdminHomePreviewView.vue";
+import AdminComicManageView from "@/components/AdminView_components/AdminComicManageView.vue";
+import SearchView from "@/components/HomePage_components/SearchView.vue";
 
 
 const routes =[
@@ -15,7 +25,19 @@ const routes =[
             {
                 path: '',
                 component: MainWrap,
-            }
+            },
+            {
+                path: '/category',
+                component: CategoryView
+            },
+            {
+                path: '/search',
+                name: 'search',
+                component: SearchView,
+                props: route => ({
+                    query: route.query,
+                })
+            },
         ]
     },
     {
@@ -38,6 +60,35 @@ const routes =[
         })
     },
     {
+        path: "/personal",
+        name: 'personalView',
+        component: PersonalPageView,
+        children: [
+            {
+                path: 'uploadComic',
+                name: 'uploadComic',
+                component: PersonalComicUploadView
+            },
+            {
+                path: 'personalSettings',
+                name: PersonalSetting,
+                component: PersonalSetting
+            },
+            {
+                path: "createComic",
+                name: 'createComic',
+                component: PersonalComicCreateView
+            },
+            {
+                path: "manageComic",
+                name: 'manageComic',
+                component: PersonalComicManageView
+            }
+        ]
+
+    },
+
+    {
         name: "refresh",
         path: `/refresh`,
         component : import('../components/refresh.vue') ,
@@ -46,6 +97,21 @@ const routes =[
         path: '/shared',
         name: 'ShareRedirect',
         component: ShareRedirect
+    },
+    {
+        name: 'admin',
+        path: '/admin',
+        component: adminView,
+        children: [
+            {
+                path: '',
+                component: AdminHomePreviewView,
+            },
+            {
+                path: 'manageComic',
+                component: AdminComicManageView
+            },
+        ]
     }
 ]
 const router = createRouter({

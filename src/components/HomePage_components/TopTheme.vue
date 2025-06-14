@@ -16,7 +16,7 @@
         <el-input class="search" v-model="input" placeholder="请输入关键词" size="large"/>
       </div>
       <div class="topTheme_inner_search_submit">
-        <el-button type="primary" :icon="Search" size="large" />
+        <el-button type="primary" :icon="Search" size="large" @click="handleSearch"/>
       </div>
 
       <div class="topTheme_inner_right"></div>
@@ -34,7 +34,7 @@
         <el-menu-item index="5"><router-link to="/category">全部</router-link></el-menu-item>
 
         <el-menu-item index="6" class="upload-menu-item" >
-          <a target="_blank" href="/author">上传漫画</a>
+          <a target="_blank" href="/personal/uploadComic">上传漫画</a>
         </el-menu-item>
 
       </el-menu>
@@ -49,7 +49,27 @@
 <script lang="ts" setup>
 import { Search } from '@element-plus/icons-vue'
 import { ref } from 'vue'
+import {useRouter} from "vue-router";
 const input = ref('')
+const router = useRouter();
+// 处理搜索逻辑
+const handleSearch = () => {
+  if (!input.value.trim()) return;
+    // 跳转到搜索路由
+    if(router.currentRoute.value.path!=='/search'){
+      const url = router.resolve(
+          {
+            name: 'search',
+            query: { q: input.value }
+          }
+      ).href;
+      window.open(url, '_blank');
+    }
+    else {
+      router.push({ path: '/search', query: { q: input.value } });
+    }
+}
+
 </script>
 
 <style scoped>
