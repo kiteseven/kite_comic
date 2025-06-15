@@ -35,9 +35,7 @@ export const getComicChapterPages =(slug,comicId,chapterNumber)=>{
       )
 }
 
-export const getUserReaderConfig = () =>{
-    return request.get('comic/settings/readerSettings')
-}
+
 
 export const getShareSlug = () =>{
     return
@@ -149,3 +147,4 @@ export const cancelTheCollectComic =(comicId)=>{
         }
     })
 }
+

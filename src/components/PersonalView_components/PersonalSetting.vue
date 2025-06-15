@@ -197,6 +197,11 @@ const UpdatePersonalInformationDTO=ref(
       id:0,
       nickName:'',
       avatar:'',
+      phoneNumber:'',
+      signature:'',//个性签名
+      followers:0,//粉丝数
+      following:0,//关注数
+      email: '',
     }
 )
 

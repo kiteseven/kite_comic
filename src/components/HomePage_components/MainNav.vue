@@ -201,6 +201,7 @@ const submitLogin = async () => {
       console.log(token)
       localStorage.setItem('token',token)
       Login_dialogVisible.value = false; // 关闭登录对话框
+      router.go(0)
     } else {
       alert(response.message); // 显示错误信息
     }

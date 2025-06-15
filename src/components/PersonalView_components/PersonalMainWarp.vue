@@ -2,7 +2,7 @@
   <div class="personalMainWarp">
     <div class="personalNav">
       <el-menu class="menu-list">
-        <el-menu-item index="1"><router-link to="/personal/manageComic">我的漫画</router-link></el-menu-item>
+        <el-menu-item index="1"><router-link to="/personal/manageComic">管理我的漫画</router-link></el-menu-item>
         <el-menu-item index="2">我的小说</el-menu-item>
         <el-menu-item index="3"><router-link to="/personal/createComic">创建漫画</router-link></el-menu-item>
         <el-menu-item index="4"><router-link to="/personal/uploadComic">上传漫画</router-link></el-menu-item>

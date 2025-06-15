@@ -14,5 +14,13 @@ export const getUserData = ()=>{
 }
 
 export const updateUserData  = (updateUserDataDTO) =>{
-    return request.put('/user/updateUserData',updateUserDataDTO)
+    return request.put('/user/updateUserProfile',updateUserDataDTO)
+}
+
+export const saveTheComicReadConfig =(ComicReaderConfigDTO)=>{
+    return request.post('/user/settings/saveTheComicReaderConfig',ComicReaderConfigDTO)
+}
+
+export const getUserReaderConfig = () =>{
+    return request.get('/user/settings/readerSettings')
 }
