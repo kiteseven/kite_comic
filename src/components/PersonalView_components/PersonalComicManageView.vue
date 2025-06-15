@@ -31,13 +31,16 @@
 import{ ref,onMounted} from 'vue'
 import {getUserDatas} from "@/util/userDataUtil";
 import {getMyComics} from "@/api/comicApi";
+import {encipher} from "@/util/encryptedUtils";
+import {useRouter} from "vue-router";
 const comics = ref([]);
 const totalComics = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(4);
 const userData=ref();
+const router = useRouter();
 onMounted(async () => {
-  fetchComics();
+  await fetchComics();
 });
 const fetchComics = async () => {
   try {
@@ -53,7 +56,17 @@ const handlePageChange = (page) => {
   fetchComics(); // 每次切换页面时重新请求数据
 };
 const Manage = (comic)=>{
-  console.log("管理漫画", comic.title)
+  console.log("管理漫画", comic)
+  let v = encipher(comic.comicId)
+  const url = router.resolve(
+      {
+        name: 'ComicManage',
+        params: {
+          slug:comic.slug,
+        },
+        query: { v : v} }
+  ).href;
+  window.open(url, '_blank');
 }
 
 onMounted(async () => {
@@ -83,7 +96,7 @@ onMounted(async () => {
   width: 100%;
   height: auto;
   max-width: 300px;
-  max-height: 300px;
+  max-height: 355px;
   border-radius: 8px;
 }
 .comic-info h3 {

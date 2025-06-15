@@ -15,6 +15,7 @@ import adminView from "@/components/AdminView_components/AdminView.vue";
 import AdminHomePreviewView from "@/components/AdminView_components/AdminHomePreviewView.vue";
 import AdminComicManageView from "@/components/AdminView_components/AdminComicManageView.vue";
 import SearchView from "@/components/HomePage_components/SearchView.vue";
+import ComicManageView from "@/components/ComicView_components/ComicManageView.vue";
 
 
 const routes =[
@@ -59,6 +60,16 @@ const routes =[
             comicId: route.query.v
         })
     },
+    {
+        path: '/comic/:slug/:comicId?/comicManage',
+        name: 'ComicManage',
+        component: ComicManageView,
+        props: route => ({
+            slug: route.params.slug,
+            comicId: route.query.v
+        })
+    },
+
     {
         path: "/personal",
         name: 'personalView',
