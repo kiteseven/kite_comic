@@ -1,6 +1,6 @@
 <template>
   <div class="comic-detail">
-
+    <div class="header_Nav"><MainNav></MainNav></div>
     <el-card>
       <el-divider></el-divider>
       <div class="comic-header">
@@ -136,7 +136,7 @@ import {
   decrypt
 } from '@/util/encryptedUtils'
 import {getUserDatas} from "@/util/userDataUtil";
-import {c} from "vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf";
+import MainNav from "@/components/HomePage_components/MainNav.vue";
 
 
 
@@ -360,7 +360,7 @@ const shareTo = () => {
   let v = encipher(comic.value.comicId)
   const comicUrl = `http://localhost:5173/comic/${slug}?v=${v}`;
   const encodedUrl = encodeURIComponent(comicUrl);
-  shareLink.value = `http://localhost:5173/shared?redirect=${encodedUrl}`;
+  shareLink.value = `${window.location.origin}/comic/${slug}?v=${v}`;
   console.info(shareLink.value);
   navigator.clipboard.writeText(shareLink.value);
   ElMessage.success({
@@ -462,5 +462,17 @@ const cancelCollectComic = async()=>{
 .comment_function_list{
   display: flex;
   flex-direction: row;
+}
+
+.header_Nav {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  height: 100px; /* 固定导航栏高度 */
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }
 </style>
