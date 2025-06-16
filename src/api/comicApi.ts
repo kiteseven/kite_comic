@@ -7,7 +7,7 @@ export const getShowComic =() => {
 }
 
 export const getComic =(slug,comicId)=>{
-    return request.get('/comic/{slug}',
+    return request.get(`/comic/{slug}`,
     {
         params: {
             comicId
@@ -16,7 +16,7 @@ export const getComic =(slug,comicId)=>{
 }
 
 export const getComicChapters =(slug,comicId)=>{
-    return request.get('/comic/${slug}/chapters',
+    return request.get(`/comic/${slug}/chapters`,
     {
         params:{
             comicId
@@ -24,8 +24,19 @@ export const getComicChapters =(slug,comicId)=>{
     })
 }
 
+export const getAllComicChapters =(slug,comicId,page,pageSize)=>{
+    return request.get(`/comic/${slug}/allChapters`,
+        {
+            params:{
+                comicId,
+                page,
+                pageSize,
+            }
+        })
+}
+
 export const getComicChapterPages =(slug,comicId,chapterNumber)=>{
-  return request.get('/comic/${slug}/chapters/${chapterNumber}',
+  return request.get(`/comic/${slug}/chapters/${chapterNumber}`,
       {
           params:{
               chapterNumber,
@@ -46,7 +57,7 @@ export const publishComments = (CommentUploadDTO) =>{
 }
 
 export const getComments =(comicId) =>{
-    return request.get('/comic/${comicId}/getComments',
+    return request.get(`/comic/${comicId}/getComments`,
         {
             params: {
                 comicId
@@ -148,3 +159,6 @@ export const cancelTheCollectComic =(comicId)=>{
     })
 }
 
+export const updateComicBaseInformation =(ComicBaseInformationUpdateDTO)=>{
+    return request.put(`/comic/updateComicBaseInformation`,ComicBaseInformationUpdateDTO,)
+}
