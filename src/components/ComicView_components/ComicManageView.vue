@@ -168,16 +168,15 @@
       title="章节预览"
       width="60%"
   >
-    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
       <el-image
           v-for="(img, index) in previewImages"
           :key="index"
           :src="img"
           fit="contain"
-          style="width: 100%; max-width: 300px; max-height: 400px;"
+          style="width: auto; max-width: 600px;"
           lazy
           :preview-src-list="previewImages"
-          :initial-index="index"
       />
     </div>
   </el-dialog>
