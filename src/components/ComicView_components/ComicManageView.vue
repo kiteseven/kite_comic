@@ -139,6 +139,7 @@
       <el-table-column prop="updateTime" label="更新时间" />
       <el-table-column label="操作" width="160">
         <template #default="scope">
+          <el-button type="text" size="small" @click="previewChapter(scope.row.comicId,scope.row.chapterNumber)">预览</el-button>
           <el-button type="text" size="small">编辑章节</el-button>
           <el-button type="text" size="small">状态变更</el-button>
         </template>
@@ -162,6 +163,25 @@
 
   </el-card>
 
+  <el-dialog
+      v-model="previewDialogVisible"
+      title="章节预览"
+      width="60%"
+  >
+    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+      <el-image
+          v-for="(img, index) in previewImages"
+          :key="index"
+          :src="img"
+          fit="contain"
+          style="width: 100%; max-width: 300px; max-height: 400px;"
+          lazy
+          :preview-src-list="previewImages"
+          :initial-index="index"
+      />
+    </div>
+  </el-dialog>
+
 </template>
 
 <script setup lang="ts">
@@ -169,7 +189,13 @@ import {useRoute, useRouter} from "vue-router";
 import {computed, onMounted, ref} from "vue";
 import {getUserDatas} from "@/util/userDataUtil";
 import {decrypt} from "@/util/encryptedUtils";
-import {getAllComicChapters, getComic, getComicChapters, updateComicBaseInformation} from "@/api/comicApi";
+import {
+  getAllComicChapters,
+  getComic,
+  getComicChapterPages,
+  getComicChapters,
+  updateComicBaseInformation
+} from "@/api/comicApi";
 import { watch } from 'vue';
 import MainNav from "@/components/HomePage_components/MainNav.vue";
 import {ElMessage} from "element-plus";
@@ -184,8 +210,11 @@ const props = defineProps({
 });
 
 const editComicDialogVisible = ref(false);
-
+const previewDialogVisible = ref(false);
+const previewImages = ref<string[]>([]);
 const slug = props.slug
+
+
 // 漫画信息
 const comic = ref({
   comicId:0,
@@ -298,6 +327,20 @@ const getTheComic =async () => {
   }
 }
 
+// 获取章节内容图片
+const previewChapter = async (comicId,chapterNumbers) => {
+  try {
+
+    const pagesResponse = await getComicChapterPages(slug,comicId,chapterNumbers) // 返回图片 URL 列表
+    previewDialogVisible.value = true;
+    previewImages.value = pagesResponse.data.comicPages.map(p => p.imageUrl); // res.data 是你的数组对象
+    console.log(pagesResponse.data.comicPages);
+  } catch (error) {
+    console.error('预览章节失败', error);
+    ElMessage.error('章节预览失败');
+  }
+};
+
 const handleUploadSuccess = (response, file, files) => {
   console.log('上传成功', response);
   editComicForm.value.coverImage=response.data
@@ -382,6 +425,7 @@ onMounted(async () => {
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  margin-right: 100px;
 }
 
 .edit-right {
