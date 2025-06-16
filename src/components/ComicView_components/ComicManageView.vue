@@ -163,10 +163,6 @@
 
 
 
-  <el-card>
-
-  </el-card>
-
   <el-dialog
       v-model="previewDialogVisible"
       title="章节预览"
@@ -185,19 +181,74 @@
     </div>
   </el-dialog>
 
+  <!-- 新增章节弹窗 -->
+  <el-dialog
+      v-model="addChapterDialogVisible"
+      title="新增章节"
+      width="60%"
+  >
+    <div class="edit-dialog-body">
+      <el-form :model="comicData" label-width="100px">
+        <el-form-item label="章节名">
+          <el-input v-model="comicData.comicChapter.chapterName" placeholder="请输入章节名称" />
+        </el-form-item>
+
+        <el-form-item label="章节序号">
+          <el-input v-model="comicData.comicChapter.chapterNumber" placeholder="请输入章节序号" />
+        </el-form-item>
+
+        <!-- 上传图片 -->
+        <el-form-item label="章节图片">
+          <el-upload
+              ref="uploadRef"
+              class="upload-area"
+              :action="uploadUrl"
+              list-type="picture-card"
+              :auto-upload="false"
+              multiple
+              name="file"
+              accept=".jpg,.jpeg,.png,.webp"
+              :before-upload="beforeUpload"
+              :on-success="handleUploadComicPageSuccess"
+              :on-error="handleUploadError"
+              :data="comicData"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+          <div class="el-upload__tip">
+            支持 jpg/png/webp，最多 300 张，建议命名格式：章节-页数（例：1-1）
+          </div>
+        </el-form-item>
+
+        <!-- 操作按钮 -->
+        <el-form-item>
+          <el-button type="primary" @click="handleUpload">上传图片</el-button>
+          <el-button @click="resetForm">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+
+    <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="addChapterDialogVisible = false">取消</el-button>
+          <el-button type="success" @click="handleUploadComic">发布章节</el-button>
+        </span>
+    </template>
+  </el-dialog>
+
 </template>
 
 <script setup lang="ts">
 import {useRoute, useRouter} from "vue-router";
 import {computed, onMounted, ref} from "vue";
 import {getUserDatas} from "@/util/userDataUtil";
-import {decrypt} from "@/util/encryptedUtils";
+import {decrypt, encipher} from "@/util/encryptedUtils";
 import {
   getAllComicChapters,
   getComic,
   getComicChapterPages,
   getComicChapters,
-  updateComicBaseInformation
+  updateComicBaseInformation, uploadComic
 } from "@/api/comicApi";
 import { watch } from 'vue';
 import MainNav from "@/components/HomePage_components/MainNav.vue";
@@ -211,13 +262,15 @@ const props = defineProps({
   slug: String,
   comicId: Number
 });
-
+const uploadUrl = '/api/upload/comicImage';
 const editComicDialogVisible = ref(false);
 const previewDialogVisible = ref(false);
 const previewImages = ref<string[]>([]);
 const slug = props.slug
 
-
+const formRef = ref();
+const uploadRef = ref();
+const addChapterDialogVisible = ref(false);
 // 漫画信息
 const comic = ref({
   comicId:0,
@@ -245,6 +298,80 @@ const editComicForm =ref(
       coverImage: '',
     }
 )
+const comicData = ref({
+  comicId: comic.value.comicId,
+  comicTitle: comic.value.comicTitle,
+  comicChapter: {
+    chapterNumber: '',
+    chapterName: ''
+  },
+  comicPages: {}
+});
+const extractPageNumber = (url: string) => {
+  const match = url.match(/_(\d+)\.webp$/);
+  return match ? parseInt(match[1], 10) : null;
+};
+const ComicPagesMapData = new Map();
+
+const beforeUpload = (file) => {
+  const isLt5M = file.size / 1024 / 1024 < 5;
+  if (!isLt5M) {
+    ElMessage.error('单图最大5MB');
+    return false;
+  }
+  const valid = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+  if (!valid) {
+    ElMessage.error('仅支持 jpg/png/webp');
+    return false;
+  }
+  return true;
+};
+
+const handleUploadComicPageSuccess = (res, file) => {
+  const url = res.data;
+  const page = extractPageNumber(url);
+  ComicPagesMapData.set(page, url);
+};
+
+const handleUploadError = (err) => {
+  console.error('上传失败：', err);
+};
+
+const handleUpload = () => {
+  uploadRef.value!.submit();
+};
+
+const handleUploadComic = async () => {
+  comicData.value.comicPages = Object.fromEntries(ComicPagesMapData);
+  const res = await uploadComic(comicData.value);
+  if (res.code === 1) {
+    ElMessage.success('上传成功！');
+    addChapterDialogVisible.value = false;
+    window.location.reload();
+  } else {
+    ElMessage.error(res.msg);
+  }
+};
+const resetForm = () => {
+  comicData.value = {
+    comicId: comic.value.comicId,
+    comicTitle: comic.value.comicTitle,
+    comicChapter: {
+      chapterNumber: '',
+      chapterName: ''
+    },
+    comicPages: {}
+  };
+  ComicPagesMapData.clear();
+  uploadRef.value?.clearFiles?.();
+};
+const handleAddChapter =()=>{
+  addChapterDialogVisible.value = true;
+  comicData.value.comicId = comic.value.comicId;
+  comicData.value.comicTitle = comic.value.comicTitle;
+  console.log(comicData.value);
+}
+
 
 // 打开弹窗时复制当前漫画数据
 watch(editComicDialogVisible, (visible) => {
@@ -371,6 +498,8 @@ const submitEdit = async () => {
     ElMessage.error('系统异常，修改失败，请稍后重试');
   }
 }
+
+
 
 onMounted(async () => {
   await getTheComic()
