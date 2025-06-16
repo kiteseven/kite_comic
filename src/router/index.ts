@@ -16,6 +16,7 @@ import AdminHomePreviewView from "@/components/AdminView_components/AdminHomePre
 import AdminComicManageView from "@/components/AdminView_components/AdminComicManageView.vue";
 import SearchView from "@/components/HomePage_components/SearchView.vue";
 import ComicManageView from "@/components/ComicView_components/ComicManageView.vue";
+import ComicUploadChapterView from "@/components/ComicView_components/ComicUploadChapterView.vue";
 
 
 const routes =[
@@ -67,9 +68,8 @@ const routes =[
         props: route => ({
             slug: route.params.slug,
             comicId: route.query.v
-        })
+        }),
     },
-
     {
         path: "/personal",
         name: 'personalView',
