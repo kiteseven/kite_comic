@@ -147,14 +147,18 @@
     </el-table>
 
     <!-- 分页 -->
-    <div style="text-align: center; margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
       <el-pagination
         layout="prev, pager, next, jumper"
         :total="totalChapters"
         :page-size="pageSize"
         v-model:current-page="currentPage"
       />
+      <el-button type="primary" icon="Plus" @click="handleAddChapter">
+        新增章节
+      </el-button>
     </div>
+
   </el-card>
 
 
