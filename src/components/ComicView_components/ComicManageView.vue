@@ -382,6 +382,7 @@ onMounted(async () => {
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  margin-right: 100px;
 }
 
 .edit-right {
