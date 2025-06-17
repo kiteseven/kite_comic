@@ -3,11 +3,9 @@
     <div class="personalNav">
       <el-menu class="menu-list">
         <el-menu-item index="1"><router-link to="/personal/manageComic">管理我的漫画</router-link></el-menu-item>
-        <el-menu-item index="2">我的小说</el-menu-item>
-        <el-menu-item index="3"><router-link to="/personal/createComic">创建漫画</router-link></el-menu-item>
-        <el-menu-item index="4"><router-link to="/personal/uploadComic">上传漫画</router-link></el-menu-item>
-        <el-menu-item index="5">空间背景</el-menu-item>
-        <el-menu-item index="6"><router-link to="/personal/personalSettings">个人设置</router-link></el-menu-item>
+        <el-menu-item index="2"><router-link to="/personal/createComic">创建漫画</router-link></el-menu-item>
+        <el-menu-item index="3">空间背景</el-menu-item>
+        <el-menu-item index="4"><router-link to="/personal/personalSettings">个人设置</router-link></el-menu-item>
       </el-menu>
     </div>
 

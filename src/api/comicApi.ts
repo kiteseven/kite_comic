@@ -56,6 +56,10 @@ export const publishComments = (CommentUploadDTO) =>{
     return request.post('comic/uploadComment',CommentUploadDTO)
 }
 
+export const publishSonComment = (SonCommentUploadDTO) =>{
+    return request.post('comic/uploadSonComment',SonCommentUploadDTO)
+}
+
 export const getComments =(comicId) =>{
     return request.get(`/comic/${comicId}/getComments`,
         {
@@ -161,4 +165,28 @@ export const cancelTheCollectComic =(comicId)=>{
 
 export const updateComicBaseInformation =(ComicBaseInformationUpdateDTO)=>{
     return request.put(`/comic/updateComicBaseInformation`,ComicBaseInformationUpdateDTO,)
+}
+
+export const updateTheComicPage =(ComicPageUpdateDTO)=>{
+    return request.post(`/comic/updateComicPage`,ComicPageUpdateDTO)
+}
+
+export const deleteComic =(comicId)=>{
+    return request.delete(`/comic/deleteComic`,{
+        params: {
+            comicId
+        }
+    }
+    )
+}
+
+export const deleteChapter =(comicId,chapterNumber) =>{
+    return request.delete('/comic/deleteChapter',
+        {
+            params: {
+                comicId,
+                chapterNumber,
+            }
+        }
+        )
 }

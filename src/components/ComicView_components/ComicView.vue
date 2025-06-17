@@ -87,7 +87,7 @@
 
                   <el-descriptions size="default">
                     <el-descriptions-item >{{comment.uploadTime||'暂无'}}</el-descriptions-item>
-                    <el-descriptions-item ><el-button style="margin-top: 2.8px" type="text">回复</el-button></el-descriptions-item>
+                    <el-descriptions-item ><el-button style="margin-top: 2.8px" type="text" @click="openReplyDialog(comment)">回复</el-button></el-descriptions-item>
                   </el-descriptions>
 
               <div class="sonCommentList"
@@ -118,6 +118,23 @@
 
   </div>
 
+  <el-dialog
+      v-model="replyDialogVisible"
+      title="回复评论"
+      width="50%"
+  >
+    <el-input
+        v-model="replyContent"
+        type="textarea"
+        placeholder="请输入回复内容"
+        :rows="4"
+    />
+    <template #footer>
+      <el-button @click="replyDialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="submitReply">提交回复</el-button>
+    </template>
+  </el-dialog>
+
 </template>
 
 <script setup lang="ts">
@@ -129,7 +146,7 @@ import {
   addTheComicReadHistory, cancelTheCollectComic, collectTheComic,
   getComic,
   getComicChapters, getComments,
-  publishComments,
+  publishComments, publishSonComment,
 } from '@/api/comicAPi'
 import {
   encipher,
@@ -235,6 +252,11 @@ const publishComment = async () => {
     if (response.code === 1) {
       ElMessage.success("评论成功!")
       commentInput.value = null
+      // 延迟刷新页面
+      setTimeout(() => {
+        router.go(0);
+      }, 1000); // 延迟 1 秒
+
     }
   }
 
@@ -390,6 +412,52 @@ const cancelCollectComic = async()=>{
     comic.value.isCollection=false;
   }
 }
+const replyDialogVisible = ref(false);
+const replyContent = ref('');
+const currentParentComment = ref(null);  // 用于存储当前回复的父评论
+
+// 打开回复弹窗
+const openReplyDialog = (parentComment) => {
+  currentParentComment.value = parentComment; // 记录父评论
+  replyDialogVisible.value = true;  // 打开弹窗
+  replyContent.value = '';  // 清空输入框
+};
+
+// 提交回复
+const submitReply = async () => {
+  if (replyContent.value.trim() === '') {
+    ElMessage.error('回复内容不能为空');
+    return;
+  }
+
+  const reply = {
+    parentCommentId: currentParentComment.value.commentId,  // 父评论的 commentId
+    comicId:comic.value.comicId,
+    commentContent: replyContent.value,
+    userName: userData.value.userName,  // 假设有当前用户的信息
+    avatar: userData.value.avatar,
+    uploadTime: new Date().toISOString(),
+  };
+
+  // 发送请求保存子评论
+  try {
+    const response = await publishSonComment(reply);  // 假设 publishReply 是保存子评论的接口
+    if (response.code === 1) {
+      ElMessage.success('回复成功');
+      // 更新父评论的子评论列表
+      replyDialogVisible.value = false;
+      // 延迟刷新页面
+      setTimeout(() => {
+        router.go(0);
+      }, 1000); // 延迟 1 秒
+
+    } else {
+      ElMessage.error('回复失败');
+    }
+  } catch (error) {
+    ElMessage.error('网络错误，回复失败');
+  }
+};
 </script>
 
 <style scoped>
