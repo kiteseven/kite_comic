@@ -215,7 +215,7 @@ const currentGroupIndex = computed(() => Math.floor(currentPageIndex.value / 2))
 const nextPage = () => {
 
   let maxPageIndex = 0;
-
+  console.log(currentGroupIndex.value);
   if (comicReaderConfig.value.displayMode === 'double') {
     // 跨页模式：currentPageIndex 表示跨页组索引
     maxPageIndex = doublePageGroups.value.length - 1;
@@ -226,7 +226,18 @@ const nextPage = () => {
       // 跨页模式到章节末尾的处理
       if (chapterNumber.value < totalChapterCount.value) {
         // 前往下一话
-
+        ElMessageBox.confirm(
+            '是否前往下一话？',
+            '',
+            {
+              confirmButtonText: '是',
+              cancelButtonText: '否',
+            }
+        ).then(() =>{
+          goToNextChapter()
+        })
+      }else {
+        ElMessage.info("已经到底了")
       }
     }
   } else {
@@ -251,11 +262,12 @@ const nextPage = () => {
             goToNextChapter()
           })
         }
+      }else {
+        ElMessage.info("已经到底了")
       }
     }
   }
   saveReadingProgressDebounced();
-
 }
 
 //翻页（上一页）
@@ -275,6 +287,8 @@ const prevPage = () => {
       ).then(() =>{
         goToPreviousChapter()
       })
+    }else {
+      ElMessage.info("已经到顶了")
     }
   }
   saveReadingProgressDebounced()
@@ -425,9 +439,9 @@ const goToNextChapter = () => {
   let v = encipher(comicId)
   if(chapterNumber.value<totalChapterCount.value){
     chapterNumber.value += 1; // 更新 chapterNumber
-    router.push({ name: 'ComicReader', params: { slug, chapterNumber: chapterNumber.value }, query: { v:v } });
-
+    router.push({name: 'ComicReader', params: {slug, chapterNumber: chapterNumber.value}, query: {v: v}});
   }
+
 }
 
 // 在 loadChapterData 函数末尾添加
@@ -554,14 +568,12 @@ onUnmounted( () => {
     observer.value.disconnect();
   }
   saveImmediately();
-
 });
 // 监听显示模式变化
 watch(() => comicReaderConfig.value.displayMode, (newMode) => {
   if (newMode === 'double') {
     // 切换到跨页模式时重新处理页面
     processDoublePages();
-
     // 重置当前页码
     currentPageIndex.value = 0;
   } else {

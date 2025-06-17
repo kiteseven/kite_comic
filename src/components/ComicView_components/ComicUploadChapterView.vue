@@ -164,4 +164,5 @@ onMounted(async () => {
 .upload-area {
   width: 100%;
 }
+
 </style>
