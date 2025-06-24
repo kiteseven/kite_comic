@@ -212,6 +212,7 @@ const submitLogin = async () => {
 };
 const submitRegistry = async () => {
   try {
+    console.info(registerForm)
     // 简单的表单验证，确保用户名、密码和确认密码不为空
     if (!registerForm.username || !registerForm.password || !registerForm.confirmPassword) {
       alert("请完整填写所有注册信息");
@@ -224,7 +225,6 @@ const submitRegistry = async () => {
       return;
     }
 
-    // 模拟向服务器发送注册请求
     const response = await submitRegisterDTO(registerForm);
     // 根据服务器响应处理注册逻辑
     if (response.code===1) {
@@ -260,32 +260,42 @@ const Registry_handleClose = () => {
 
 const getUserDataByToken = async () => {
   const token = localStorage.getItem('token');
-  if (token){
-    const response = await getUserData();
-    if (response.code===1) {
-      userAvatar.value=response.data.avatar;
-      const userStore = useUserStore();
-      userStore.userData=response.data
-      console.info(userStore.userData)
-      isLogin.value = true; // 设置为登录状态
-
+  try {
+    if (token){
+      const response = await getUserData();
+      if (response.code===1) {
+        userAvatar.value=response.data.avatar;
+        const userStore = useUserStore();
+        userStore.userData=response.data
+        console.info(userStore.userData)
+        isLogin.value = true; // 设置为登录状态
+      }
     }
+  }catch (e){
+
   }
 
 }
 //获取漫画阅读历史记录展示
 const getTheComicReadHistory = async () => {
-  const response = await getTheComicReadHistoryToShow();
-  if (response.code===1) {
-    console.log(response.data);
-    comicHistoryRecords.value = response.data;
+  const token = localStorage.getItem('token');
+  if (token){
+    const response = await getTheComicReadHistoryToShow();
+    if (response.code===1) {
+      console.log(response.data);
+      comicHistoryRecords.value = response.data;
+    }
   }
+
 }
 const getTheComicCollection = async () => {
-  const response = await getComicCollectionToShow();
-  if (response.code===1) {
-    console.log(response.data);
-    comicCollections.value = response.data;
+  const token = localStorage.getItem('token');
+  if (token){
+    const response = await getComicCollectionToShow();
+    if (response.code===1) {
+      console.log(response.data);
+      comicCollections.value = response.data;
+    }
   }
 }
 //通过历史记录进入漫画详情界面

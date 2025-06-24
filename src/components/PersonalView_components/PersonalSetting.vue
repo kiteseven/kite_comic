@@ -292,11 +292,15 @@ const determine = async () => {
             {
               UpdatePersonalInformationDTO.value.id=userData.id;
               UpdatePersonalInformationDTO.value.avatar=response.data.data;
+              userData.value.avatar=response.data.data;
               console.log(UpdatePersonalInformationDTO)
-              //const newResponse =await axios.put('/api/user/updatePersonalInformation',UpdatePersonalInformationDTO.value);
-              if(newResponse.data.code===1){
+              const newResponse =await updateUserData(userData.value)
+              if(newResponse.code===1){
                 ElMessage.success('上传成功!');
                 dialogVisibleCorpper.value = false
+                setTimeout(() => {
+                  router.go(0);
+                }, 1000); // 延迟 1 秒
               }else{
                 console.log('上传失败',newResponse.msg);
                 ElMessage.success('上传失败',newResponse.msg);
