@@ -446,10 +446,13 @@ const goToNextChapter = () => {
 
 // 在 loadChapterData 函数末尾添加
 const incrementClickCount = async (comicId) => {
-  try {
-    await incrementComicClickCount(comicId);
-  } catch (err) {
-    console.error('点击量统计失败', err);
+  const token = localStorage.getItem('token');
+  if (token){
+    try {
+      await incrementComicClickCount(comicId);
+    } catch (err) {
+      console.error('点击量统计失败', err);
+    }
   }
 }
 
@@ -472,14 +475,17 @@ const loadChapterData = async () => {
 }
 
 const loadReadingSettings = async () => {
-  const config = await getUserReaderConfig();
-  console.info(config);
-  comicReaderConfig.value.displayMode =config.data.displayMode;
-  comicReaderConfig.value.JapaneseReadingOrder=config.data.japaneseReadingOrder
-  comicReaderConfig.value.isDarkMode=config.data.isDarkMode
-  console.info("displayMode:",comicReaderConfig.value.displayMode)
-  if (comicReaderConfig.value.displayMode==='double') {
-    processDoublePages()
+  const token = localStorage.getItem('token');
+  if (token) {
+    const config = await getUserReaderConfig();
+    console.info(config);
+    comicReaderConfig.value.displayMode = config.data.displayMode;
+    comicReaderConfig.value.JapaneseReadingOrder = config.data.japaneseReadingOrder
+    comicReaderConfig.value.isDarkMode = config.data.isDarkMode
+    console.info("displayMode:", comicReaderConfig.value.displayMode)
+    if (comicReaderConfig.value.displayMode === 'double') {
+      processDoublePages()
+    }
   }
 }
 
@@ -501,55 +507,61 @@ const currentReadingPosition = computed(() => {
 
 // 带防抖的保存函数（300ms防抖）
 const saveReadingProgressDebounced = debounce(async () => {
-  try {
-    isSaving.value = true;
-    saveStatusText.value = '保存中...';
-    console.info("保存阅读记录:",currentReadingPosition.value);
-    await saveTheComicReadHistoryDetail(currentReadingPosition.value);
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      isSaving.value = true;
+      saveStatusText.value = '保存中...';
+      console.info("保存阅读记录:", currentReadingPosition.value);
+      await saveTheComicReadHistoryDetail(currentReadingPosition.value);
 
-    saveStatusText.value = '进度已保存';
-    isSaving.value = false;
+      saveStatusText.value = '进度已保存';
+      isSaving.value = false;
 
-    // 3秒后隐藏保存提示
-    clearTimeout(saveTimer.value);
-    saveTimer.value = setTimeout(() => {
-      saveStatusText.value = '';
-    }, 3000);
-  } catch (err) {
-    console.error('保存阅读进度失败', err);
-    saveStatusText.value = '保存失败';
-    setTimeout(() => {
-      saveStatusText.value = '';
-    }, 2000);
+      // 3秒后隐藏保存提示
+      clearTimeout(saveTimer.value);
+      saveTimer.value = setTimeout(() => {
+        saveStatusText.value = '';
+      }, 3000);
+    } catch (err) {
+      console.error('保存阅读进度失败', err);
+      saveStatusText.value = '保存失败';
+      setTimeout(() => {
+        saveStatusText.value = '';
+      }, 2000);
+    }
   }
 }, 300);
 
 // 立即保存（无防抖）
 const saveImmediately = async () => {
-  // 取消防抖保存（如果有）
-  saveReadingProgressDebounced.cancel();
+  const token = localStorage.getItem('token');
+  if (token) {
+    // 取消防抖保存（如果有）
+    saveReadingProgressDebounced.cancel();
 
-  try {
-    isSaving.value = true;
-    saveStatusText.value = '正在保存...';
+    try {
+      isSaving.value = true;
+      saveStatusText.value = '正在保存...';
 
-    console.info("立即保存阅读记录:", currentReadingPosition.value);
-    await saveTheComicReadHistoryDetail(currentReadingPosition.value);
+      console.info("立即保存阅读记录:", currentReadingPosition.value);
+      await saveTheComicReadHistoryDetail(currentReadingPosition.value);
 
-    saveStatusText.value = '进度已保存';
-    isSaving.value = false;
+      saveStatusText.value = '进度已保存';
+      isSaving.value = false;
 
-    // 3秒后隐藏保存提示
-    if (saveTimer.value) clearTimeout(saveTimer.value);
-    saveTimer.value = setTimeout(() => {
-      saveStatusText.value = '';
-    }, 3000);
-  } catch (err) {
-    console.error('立即保存失败', err);
-    saveStatusText.value = '保存失败';
-    setTimeout(() => {
-      saveStatusText.value = '';
-    }, 2000);
+      // 3秒后隐藏保存提示
+      if (saveTimer.value) clearTimeout(saveTimer.value);
+      saveTimer.value = setTimeout(() => {
+        saveStatusText.value = '';
+      }, 3000);
+    } catch (err) {
+      console.error('立即保存失败', err);
+      saveStatusText.value = '保存失败';
+      setTimeout(() => {
+        saveStatusText.value = '';
+      }, 2000);
+    }
   }
 };
 

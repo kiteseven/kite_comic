@@ -207,7 +207,12 @@ const chapters = ref([
   {comicId:0,chapterNumber:0,chapterName:''}
 ]);
 const getTheComic =async () => {
-  const comicId = decrypt(route.query.v);
+  const encryptedId = route.query.v;
+
+  console.log(encryptedId);
+
+  const comicId = decrypt(encryptedId);
+  console.log("comicId",comicId);
   try {
     console.info(props)
     console.info(slug)
@@ -336,10 +341,15 @@ const addComicReadHistory = () => {
 // 页面挂载时加载漫画数据
 onMounted(  async () => {
   await getTheComic()
-  userData.value = await getUserDatas();
-  avatar.value =userData.value.avatar;
   await getCommentList();
-  addComicReadHistory()
+  const token = localStorage.getItem('token');
+  if (token){
+    userData.value = await getUserDatas();
+    avatar.value =userData.value.avatar;
+    addComicReadHistory()
+  }
+
+
 });
 
 // 跳转到阅读页面
@@ -381,10 +391,11 @@ const goToChapter = (chapterNumber: number) => {
 const shareTo = () => {
   let v = encipher(comic.value.comicId)
   const comicUrl = `http://localhost:5173/comic/${slug}?v=${v}`;
-  const encodedUrl = encodeURIComponent(comicUrl);
+  const encoded = encodeURIComponent(v);
+  const shareUrl = `${window.location.origin}/comic/${slug}?v=${encoded}`;
+  navigator.clipboard.writeText(shareUrl);
   shareLink.value = `${window.location.origin}/comic/${slug}?v=${v}`;
   console.info(shareLink.value);
-  navigator.clipboard.writeText(shareLink.value);
   ElMessage.success({
     message: '分享链接已复制到剪贴板',
     duration: 2000
