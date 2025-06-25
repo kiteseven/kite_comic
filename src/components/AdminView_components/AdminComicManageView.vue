@@ -1,6 +1,8 @@
 <script setup>
 import{ ref,onMounted} from 'vue'
-import {adminGetComics} from "@/api/adminApi.js";
+import {adminGetComics, exportComicsToTheExcel} from "@/api/adminApi.js";
+import { saveAs } from 'file-saver'
+import axios from "axios";
 
 const comics = ref([]);
 const totalComics = ref(0);
@@ -28,6 +30,17 @@ const Manage = (comic)=>{
 onMounted(async () => {
   await getAllComics();
 })
+
+const exportComicsToExcel = async () => {
+  try {
+    const response = await exportComicsToTheExcel();
+    console.info(response);
+    const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, '漫画数据.xlsx');
+  } catch (error) {
+    console.error('导出失败', error);
+  }
+};
 </script>
 
 <template>
@@ -50,6 +63,7 @@ onMounted(async () => {
           suffix-icon="el-icon-search"
           class="adminComic-search"
       />
+      <el-button type="success" @click="exportComicsToExcel">导出 Excel</el-button>
     </div>
 
     <!-- 章节表格 -->
@@ -130,5 +144,14 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   margin: 20px 0;
+}
+.adminComic-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.adminComic-search{
+  width: 240px;
 }
 </style>

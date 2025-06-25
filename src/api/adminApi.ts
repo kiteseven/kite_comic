@@ -14,3 +14,15 @@ export const adminGetComics =(page,pageSize)=>{
         }
     )
 }
+
+export const getTheComicStats =()=>{
+    return request.get('/admin/getTheComicStats')
+}
+
+export const exportComicsToTheExcel =()=>{
+    return request.get('/admin/exportComic'
+        , {
+            responseType: 'blob', // 接收二进制流
+        }
+        )
+}

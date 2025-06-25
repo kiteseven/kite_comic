@@ -1,26 +1,51 @@
 <script setup>
 import {onMounted, reactive, ref} from "vue";
-import {getStats} from "@/api/adminApi.js";
+import {getStats, getTheComicStats} from "@/api/adminApi.js";
 import {ChatSquare, Memo, Reading, User} from "@element-plus/icons-vue";
 import * as echarts from 'echarts';
 
-const chartRef = ref(null);  // 绑定图表 DOM 元素
+const chartRef1 = ref(null);  // 绑定图表 DOM 元素
+
+const chartRef2 = ref(null);  // 绑定图表 DOM 元素
+
+const chartRef3 = ref(null); // 新增这个 ref
 
 const stats =reactive({
   comicNumber: 0,
   commentNumber:0,
   userNumber:0,
 })
+
+const comicStats = reactive({
+  totalComics:10,
+  totalClicks:5,
+  ongoingComics:2,
+  completedComics:1
+})
+
+
 const getTheStats =async () => {
   const response = await getStats();
    stats.comicNumber =response.data.comicNumber
    stats.commentNumber =response.data.commentNumber
    stats.userNumber =response.data.userNumber
-   renderChart(); // 数据加载完后绘制图表
+   renderChart1(); // 数据加载完后绘制图表
 }
-const renderChart = () => {
-  if (!chartRef.value) return;
-  const chart = echarts.init(chartRef.value);
+
+const getComicStats =async () => {
+  const response = await getTheComicStats();
+  comicStats.totalComics =response.data.totalComics
+  comicStats.totalClicks =response.data.totalClicks
+  comicStats.ongoingComics =response.data.ongoingComics
+  comicStats.completedComics =response.data.completedComics
+  console.info(comicStats)
+  renderChart2();
+  renderChart3();
+}
+
+const renderChart1 = () => {
+  if (!chartRef1.value) return;
+  const chart = echarts.init(chartRef1.value);
 
   chart.setOption({
     title: {
@@ -52,8 +77,82 @@ const renderChart = () => {
   });
 }
 
+// 渲染 ECharts 图表
+const renderChart2 = () => {
+  if (!chartRef2.value) return;
+  const chart = echarts.init(chartRef2.value); // 初始化图表
+
+  chart.setOption({
+    title: {
+      text: '漫画数据统计',
+      left: 'center'
+    },
+    tooltip: {},
+    xAxis: {
+      type: 'category',
+      data: ['漫画总数', '总点击量', '连载中', '已完结']
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        name: '数量',
+        type: 'bar',
+        data: [
+          comicStats.totalComics,
+          comicStats.totalClicks,
+          comicStats.ongoingComics,
+          comicStats.completedComics
+        ],
+        itemStyle: {
+          color: '#409EFF'
+        }
+      }
+    ]
+  });
+};
+
+
+const renderChart3 = () => {
+  if (!chartRef3.value) return;
+  const chart = echarts.init(chartRef3.value);
+// ✅ 每次绘制都重新生成 pieData，确保数据最新
+  const pieData = [
+    { value: comicStats.ongoingComics, name: '连载中' },
+    { value: comicStats.completedComics, name: '已完结' }
+  ];
+  const option = {
+    title: {
+      text: '漫画状态分布',
+      left: 'center',
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: {c} ({d}%)',
+    },
+    series: [
+      {
+        name: '漫画状态',
+        type: 'pie',
+        radius: '50%',
+        data: pieData,
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        },
+      },
+    ],
+  };
+
+  chart.setOption(option);
+};
 onMounted(() => {
   getTheStats()
+  getComicStats()
 })
 </script>
 
@@ -84,8 +183,12 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- ECharts 图表容器 -->
-      <div ref="chartRef" class="chart-container"></div>
+      <!-- ECharts 图表容器1 -->
+
+        <div ref="chartRef1" class="chart-container"></div>
+        <!-- ECharts 图表容器2 -->
+        <div ref="chartRef2" class="chart-container"></div>
+        <div ref="chartRef3" class="chart-container"></div>
     </el-card>
   </div>
 </template>
