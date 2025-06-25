@@ -3,6 +3,7 @@ import{ ref,onMounted} from 'vue'
 import {adminGetComics, exportComicsToTheExcel} from "@/api/adminApi.js";
 import { saveAs } from 'file-saver'
 import axios from "axios";
+import {ElMessage} from "element-plus";
 
 const comics = ref([]);
 const totalComics = ref(0);
@@ -41,6 +42,12 @@ const exportComicsToExcel = async () => {
     console.error('导出失败', error);
   }
 };
+
+const uploadHeaders = ref({ Authorization: localStorage.getItem('token')});
+
+const handleSuccess = () => {
+  ElMessage.success("导入成功！");
+};
 </script>
 
 <template>
@@ -63,7 +70,18 @@ const exportComicsToExcel = async () => {
           suffix-icon="el-icon-search"
           class="adminComic-search"
       />
-      <el-button type="success" @click="exportComicsToExcel">导出 Excel</el-button>
+      <div class="adminComic-toolbar-button">
+        <el-button type="success" @click="exportComicsToExcel">导出 Excel</el-button>
+        <el-upload
+            action="/api/admin/import"
+            :headers="uploadHeaders"
+            :show-file-list="false"
+            :on-success="handleSuccess"
+            accept=".xlsx"
+        >
+          <el-button type="primary">导入 Excel</el-button>
+        </el-upload>
+      </div>
     </div>
 
     <!-- 章节表格 -->
@@ -153,5 +171,9 @@ const exportComicsToExcel = async () => {
 }
 .adminComic-search{
   width: 240px;
+}
+.adminComic-toolbar-button{
+  display: flex;
+
 }
 </style>
