@@ -26,3 +26,8 @@ export const exportComicsToTheExcel =()=>{
         }
         )
 }
+
+export const adminDeleteComics =(ids)=>{
+    return request.delete('/admin/deleteComics', {
+        data:ids})
+}

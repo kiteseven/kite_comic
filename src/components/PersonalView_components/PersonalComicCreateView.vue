@@ -1,6 +1,6 @@
 <template>
   <div class="upload-view">
-    <el-form ref="formRef" :model="comicData" label-width="120px">
+    <el-form ref="formRef" :model="comicData" :rules="rules" label-width="120px">
       <el-form-item label="漫画名称">
         <el-input v-model="comicData.comicTitle" placeholder="请输入漫画名称"></el-input>
       </el-form-item>
@@ -94,10 +94,13 @@ const options = [
     label: '少女漫'
   },
 ]
+const formRef =ref();
+
 const handleUploadSuccess = (response, file, files) => {
   console.log('上传成功', response);
   comicData.value.coverImage=response.data
   console.log(comicData)
+  formRef.value.validateField('coverImage');
   // 处理上传成功后的逻辑，比如更新页面数据或显示图片地址
 };
 
@@ -108,6 +111,10 @@ const handleUpload = () => {
 }
 
 const handleCreateComic = async () => {
+  formRef.value.validate(async (valid: boolean) => {
+    if (!valid) {
+      return; // 不合法时直接返回
+    }
   console.log(comicData)
   if(radio.value===0){
     comicData.value.authorName=userData.value.nickName||userData.value.userName
@@ -122,8 +129,17 @@ const handleCreateComic = async () => {
   else{
     alert(response.msg)
   }
-
+  })
 };
+
+const rules = {
+  comicTitle: [{ required: true, message: '请输入漫画名称', trigger: 'blur' }],
+  description: [{ required: true, message: '请输入漫画简介', trigger: 'blur' }],
+  authorName: [{ required: true, message: '请输入作者名字', trigger: 'blur' }],
+  genre: [{ required: true, message: '请选择漫画类型', trigger: 'change' }],
+  coverImage: [{ required: true, message: '请上传漫画封面', trigger: 'change' }],
+};
+
 onMounted( async () => {
   userData.value = await getUserDatas();
 })

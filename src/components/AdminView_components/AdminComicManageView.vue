@@ -1,9 +1,9 @@
 <script setup>
 import{ ref,onMounted} from 'vue'
-import {adminGetComics, exportComicsToTheExcel} from "@/api/adminApi.js";
+import {adminDeleteComics, adminGetComics, exportComicsToTheExcel} from "@/api/adminApi.js";
 import { saveAs } from 'file-saver'
 import axios from "axios";
-import {ElMessage} from "element-plus";
+import {ElMessage, ElMessageBox} from "element-plus";
 
 const comics = ref([]);
 const totalComics = ref(0);
@@ -48,6 +48,37 @@ const uploadHeaders = ref({ Authorization: localStorage.getItem('token')});
 const handleSuccess = () => {
   ElMessage.success("导入成功！");
 };
+const previewDialogVisible = ref(false);
+const thePreviewCoverImage = ref();
+const previewCoverImage = (comic) => {
+  previewDialogVisible.value = true;
+  thePreviewCoverImage.value = comic.coverImage;
+}
+
+const multipleSelection = ref([]);
+
+const handleSelectionChange = (val) => {
+  multipleSelection.value = val;
+};
+
+const deleteSelectedComics = () => {
+  if (multipleSelection.value.length === 0) {
+    ElMessage.warning('请先选择要删除的漫画');
+    return;
+  }
+
+  ElMessageBox.confirm('确定删除选中的漫画吗？', '批量删除确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(async () => {
+    const ids = multipleSelection.value.map((item) => item.comicId);
+    await adminDeleteComics(ids); // 后端批量删除接口
+    ElMessage.success('批量删除成功');
+    await getAllComics(); // 重新获取数据
+  });
+};
+
 </script>
 
 <template>
@@ -85,7 +116,13 @@ const handleSuccess = () => {
     </div>
 
     <!-- 章节表格 -->
-    <el-table :data="comics" style="width: 100%" border>
+    <el-table :data="comics"
+              style="
+              width: 100%"
+              border
+              @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection" width="55"  />
       <el-table-column label="序号" type="index" width="60" />
       <el-table-column label="漫画封面" width="120">
         <template #default="scope">
@@ -107,6 +144,7 @@ const handleSuccess = () => {
       <el-table-column prop="updateTime" label="更新时间" />
       <el-table-column label="操作" width="160">
         <template #default="scope">
+          <el-button type="text" size="small" @click="previewCoverImage(scope.row)">预览封面</el-button>
           <el-button type="primary" size="small" @click="Manage(comic)">管理漫画</el-button>
         </template>
       </el-table-column>
@@ -120,9 +158,25 @@ const handleSuccess = () => {
           :page-size="pageSize"
           @current-change="handlePageChange"
       />
+      <el-button type="danger" size="small" @click="deleteSelectedComics">删除</el-button>
     </div>
 
   </el-card>
+
+  <el-dialog
+      v-model="previewDialogVisible"
+      title="封面预览"
+      width="60%"
+  >
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+      <el-image
+          :src="thePreviewCoverImage"
+          fit="contain"
+          style="width: auto; max-width: 600px;"
+          lazy
+      />
+    </div>
+  </el-dialog>
 
 </template>
 
