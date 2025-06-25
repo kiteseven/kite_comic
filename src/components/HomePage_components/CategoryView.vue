@@ -7,6 +7,12 @@
         <el-button @click="sortBy('latest')">更新时间</el-button>
         <el-button @click="sortBy('popularity')">热门</el-button>
       </el-button-group>
+      <span>分类:</span>
+      <el-button-group>
+        <el-button @click="sortType(0)">全部</el-button>
+        <el-button @click="sortType(1)">少年漫</el-button>
+        <el-button @click="sortType(2)">少女漫</el-button>
+      </el-button-group>
     </div>
 
     <!-- 漫画项目 -->
@@ -47,6 +53,7 @@ const currentPage = ref(1);
 const pageSize = ref(8);
 const totalComics = ref(0); // 用于记录总数
 const type= ref("update_time")
+const kind = ref(0)
 const router = useRouter();
 const comics = ref([
   {
@@ -66,7 +73,7 @@ onMounted(() => {
 // 请求漫画数据函数
 const fetchComics = async () => {
   try {
-    const response = await getComicByPageSize(currentPage.value,pageSize.value,type.value);
+    const response = await getComicByPageSize(currentPage.value,pageSize.value,type.value,kind.value);
     console.log(response)
     comics.value = response.data.records; // 例如，后端返回的数据包含一个名为 comics 的数组
     totalComics.value = response.data.total; // 例如，后端返回的数据包含一个名为 total 的总数
@@ -89,6 +96,11 @@ const sortBy = (criteria) => {
     type.value="click"
     fetchComics(); // 每次切换页面时重新请求数据
   }
+}
+
+const sortType = (sort) => {
+  kind.value = sort
+  fetchComics();
 }
 
 const startReading = (comic) => {

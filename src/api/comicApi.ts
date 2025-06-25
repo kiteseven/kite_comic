@@ -86,13 +86,14 @@ export const incrementComicClickCount =(comicId)=>{
         );
 }
 
-export const getComicByPageSize =(page,pageSize,type)=>{
+export const getComicByPageSize =(page,pageSize,type,kind)=>{
     return request.get('/comic/getComicByPageSize',
         {
             params: {
                 page,
                 pageSize,
-                type
+                type,
+                kind
             }
         })
 }
