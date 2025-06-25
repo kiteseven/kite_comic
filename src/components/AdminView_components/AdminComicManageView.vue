@@ -5,12 +5,15 @@ import {adminGetComics} from "@/api/adminApi.js";
 const comics = ref([]);
 const totalComics = ref(0);
 const currentPage = ref(1);
-const pageSize = ref(9);
+const pageSize = ref(4);
+const searchKeyword = ref("");
+
 const getAllComics =async () => {
   try {
     const response = await adminGetComics(currentPage.value, pageSize.value);
     comics.value = response.data.records; // 例如，后端返回的数据包含一个名为 comics 的数组
     totalComics.value = response.data.total; // 例如，后端返回的数据包含一个名为 total 的总数
+    console.log(comics);
   } catch (error) {
     console.error('获取漫画数据失败:', error);
   }
@@ -28,32 +31,67 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="manageComicView">
-    <div class="comic-grid">
-      <div v-for="comic in comics" :key="comic.id" class="comic-item">
-        <img :src="comic.coverImage" alt="comic.comicTitle" class="comic-cover"/>
-        <div class="comic-info">
-          <h3>{{ comic.comicTitle }}</h3>
-          <p>作者: {{ comic.authorName }}</p>
-          <p>类型: {{ comic.genre }}</p>
-          <p>状态: {{ comic.status }}</p>
-          <p>最新: {{ comic.updateTime }}</p>
-          <el-button type="primary" size="small" @click="Manage(comic)">管理漫画</el-button>
-        </div>
-      </div>
+
+  <!-- 漫画管理卡片 -->
+  <el-card class="adminComic-section">
+    <div class="adminComic-toolbar">
+      <!-- 章节状态筛选按钮 -->
+      <el-radio-group >
+        <el-radio-button label="全部" />
+        <el-radio-button label="已上线" />
+        <el-radio-button label="待审核" />
+      </el-radio-group>
+
+      <!-- 搜索框 -->
+      <el-input
+          v-model="searchKeyword"
+          placeholder="搜索漫画"
+          clearable
+          suffix-icon="el-icon-search"
+          class="adminComic-search"
+      />
     </div>
 
+    <!-- 章节表格 -->
+    <el-table :data="comics" style="width: 100%" border>
+      <el-table-column label="序号" type="index" width="60" />
+      <el-table-column label="漫画封面" width="120">
+        <template #default="scope">
+          <el-image :src="scope.row.coverImage" fit="cover" style="width: 80px; height: 80px;" />
+        </template>
+      </el-table-column>
+      <el-table-column prop="comicTitle" label="漫画名" />
+      <el-table-column prop="genre" label="漫画类型">
+        <template #default="scope">
+          {{ scope.row.genre }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="status" label="审核状态">
+        <template #default="scope">
+          {{ scope.row.status}}
+        </template>
+      </el-table-column>
+      <el-table-column prop="createTime" label="创建时间" />
+      <el-table-column prop="updateTime" label="更新时间" />
+      <el-table-column label="操作" width="160">
+        <template #default="scope">
+          <el-button type="primary" size="small" @click="Manage(comic)">管理漫画</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
     <!-- 分页 -->
-    <div class="pagination">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
       <el-pagination
-          background
-          layout="prev, pager, next"
+          layout="prev, pager, next, jumper"
           :total="totalComics"
           :page-size="pageSize"
-          @current-change="handlePageChange">
-      </el-pagination>
+          @current-change="handlePageChange"
+      />
     </div>
-  </div>
+
+  </el-card>
+
 </template>
 
 <style scoped>

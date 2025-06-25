@@ -15,6 +15,7 @@
     "cropperjs": "^1.6.2",
     "crypto-js": "^4.2.0",
     "dompurify": "^3.2.5",
+    "echarts": "^5.6.0",
     "element-plus": "^2.9.10",
     "pinia": "^3.0.2",
     "postcss-pxtorem": "^6.1.0",
