@@ -1,17 +1,17 @@
 <template>
   <div class="upload-view">
     <el-form ref="formRef" :model="comicData" :rules="rules" label-width="120px">
-      <el-form-item label="漫画名称">
+      <el-form-item label="漫画名称" prop="comicTitle">
         <el-input v-model="comicData.comicTitle" placeholder="请输入漫画名称"></el-input>
       </el-form-item>
-      <el-form-item label="漫画简介">
+      <el-form-item label="漫画简介" prop="description">
         <el-input v-model="comicData.description" placeholder="请输入漫画简介"></el-input>
       </el-form-item>
-      <el-form-item label="漫画作者">
+      <el-form-item label="漫画作者" prop="authorName">
         <el-input v-model="comicData.authorName" placeholder="请输入作者名字"></el-input>
       </el-form-item>
 
-      <el-form-item label="漫画类型">
+      <el-form-item label="漫画类型" prop="genre">
         <el-select
             v-model="comicData.genre"
             placeholder="Select"
@@ -33,7 +33,7 @@
           <el-radio :value="2">汉化作品</el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="图片上传">
+      <el-form-item label="图片上传" prop="coverImage">
         <el-upload
             ref="uploadRef"
             :action="uploadUrl"
@@ -113,6 +113,7 @@ const handleUpload = () => {
 const handleCreateComic = async () => {
   formRef.value.validate(async (valid: boolean) => {
     if (!valid) {
+      console.log('表单验证失败');
       return; // 不合法时直接返回
     }
   console.log(comicData)
